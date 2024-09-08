@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dexterous-Dev 讨论</title>
+    <link rel="stylesheet" href="../style.css"> <!-- 引用样式表 -->
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <a href="../">
+                <img src="../logo.png" alt="Logo" style="height: 50px; width: auto;">
+            </a>
+        </div>
+        <div class="nav">
+            <a href="/blog">博客</a>
+            <a href="/discuss">讨论</a>
+            <a href="/git">Git Dexterous</a>
+            <a href="/news">新闻</a>
+            <a href="/personal-center">个人中心</a>
+        </div>
+        <div class="search">
+            <input type="text" id="search-input" placeholder="搜索...">
+            <button id="search-button">搜索</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="main-content">
+            <div class="article">
+                <!-- 搜索结果显示区域 -->
+                <div id="search-results"></div>
+            </div>
+            <div class="sidebar">
+                <h3>推荐内容</h3>
+                <p>这里是推荐内容区域。</p>
+            </div>
+    </div>
+    <div class="footer">
+        <p>Dexterous-Dev &copy; 墨川居士</p>
+    </div>
+
+    <script>
+        document.getElementById('search-button').addEventListener('click', () => {
+            const query = document.getElementById('search-input').value;
+            fetch(`http://localhost:3000/search?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(results => {
+                    const resultsContainer = document.getElementById('search-results');
+                    resultsContainer.innerHTML = ''; // 清空之前的结果
+                    if (results.length > 0) {
+                        results.forEach(item => {
+                            const highlightedTitle = highlightQuery(item.title, query);
+                            const highlightedIntroduction = highlightQuery(item.introduction, query);
+        
+                            const div = document.createElement('div');
+                            div.innerHTML = `
+                                <div class="result-title">${highlightedTitle}</div>
+                                <div class="result-introduction">${highlightedIntroduction}</div>
+                            `;
+                            resultsContainer.appendChild(div);
+                        });
+                    } else {
+                        resultsContainer.textContent = '没有找到相关结果';
+                    }
+                })
+                .catch(error => console.error('搜索请求失败:', error));
+        });
+        
+        document.getElementById('search-input').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                const query = document.getElementById('search-input').value;
+                fetch(`http://localhost:3000/search?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(results => {
+                        const resultsContainer = document.getElementById('search-results');
+                        resultsContainer.innerHTML = ''; // 清空之前的结果
+                        if (results.length > 0) {
+                            results.forEach(item => {
+                                const highlightedTitle = highlightQuery(item.title, query);
+                                const highlightedIntroduction = highlightQuery(item.introduction, query);
+        
+                                const div = document.createElement('div');
+                                div.innerHTML = `
+                                    <div class="result-title">${highlightedTitle}</div>
+                                    <div class="result-introduction">${highlightedIntroduction}</div>
+                                `;
+                                resultsContainer.appendChild(div);
+                            });
+                        } else {
+                            resultsContainer.textContent = '没有找到相关结果';
+                        }
+                    })
+                    .catch(error => console.error('搜索请求失败:', error));
+            }
+        });
+        
+        function highlightQuery(text, query) {
+            if (!query) return text;
+        
+            // 处理中文和英文字符的正则表达式
+            const regex = new RegExp(`(${query.split('').map(char => `[${char}]`).join('|')})`, 'gi');
+        
+            // 将匹配到的部分高亮
+            return text.replace(regex, '<span class="highlight">\$1</span>');
+        }
+    </script>
+</body>
+</html>
